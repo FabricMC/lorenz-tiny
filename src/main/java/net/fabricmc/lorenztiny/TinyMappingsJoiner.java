@@ -31,8 +31,6 @@ import net.fabricmc.mapping.tree.TinyTree;
 import org.cadixdev.lorenz.MappingSet;
 import org.cadixdev.lorenz.io.MappingsReader;
 import org.cadixdev.lorenz.model.ClassMapping;
-import org.cadixdev.lorenz.model.FieldMapping;
-import org.cadixdev.lorenz.model.MethodMapping;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -101,18 +99,18 @@ public class TinyMappingsJoiner extends MappingsReader {
 			for (final FieldDef fieldA : classA.getFields()) {
 				final FieldDef fieldB = fields.get(fieldA.getName(this.matchB));
 
-				final FieldMapping field = klass.getOrCreateFieldMapping(fieldA.getName(this.from), fieldA.getDescriptor(this.from));
 				if (fieldB != null) {
-					field.setDeobfuscatedName(fieldB.getName(this.to));
+					klass.getOrCreateFieldMapping(fieldA.getName(this.from), fieldA.getDescriptor(this.from))
+							.setDeobfuscatedName(fieldB.getName(this.to));
 				}
 			}
 
 			for (final MethodDef methodA : classA.getMethods()) {
 				final MethodDef methodB = methods.get(methodA.getName(this.matchB));
 
-				final MethodMapping method = klass.getOrCreateMethodMapping(methodA.getName(this.from), methodA.getDescriptor(this.from));
 				if (methodB != null) {
-					method.setDeobfuscatedName(methodA.getName(this.to));
+					klass.getOrCreateMethodMapping(methodA.getName(this.from), methodA.getDescriptor(this.from))
+							.setDeobfuscatedName(methodB.getName(this.to));
 				}
 			}
 		}
