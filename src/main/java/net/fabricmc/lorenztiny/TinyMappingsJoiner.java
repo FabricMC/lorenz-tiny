@@ -31,8 +31,9 @@ import net.fabricmc.mapping.tree.TinyTree;
 import org.cadixdev.lorenz.MappingSet;
 import org.cadixdev.lorenz.io.MappingsReader;
 import org.cadixdev.lorenz.model.ClassMapping;
+import org.cadixdev.lorenz.model.FieldMapping;
+import org.cadixdev.lorenz.model.MethodMapping;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -71,13 +72,13 @@ public class TinyMappingsJoiner extends MappingsReader {
 	}
 
 	@Override
-	public MappingSet read(final MappingSet mappings) throws IOException {
+	public MappingSet read(final MappingSet mappings) {
 		// These maps have matched name -> definition from a
 		final Map<String, ClassDef> classes = new HashMap<>();
 		final Map<String, FieldDef> fields = new HashMap<>();
 		final Map<String, MethodDef> methods = new HashMap<>();
 
-		for (final ClassDef klass : this.treeA.getClasses()) {
+		for (final ClassDef klass : this.treeB.getClasses()) {
 			classes.put(klass.getName(this.matchA), klass);
 
 			for (final FieldDef field : klass.getFields()) {
@@ -89,24 +90,30 @@ public class TinyMappingsJoiner extends MappingsReader {
 			}
 		}
 
-		for (final ClassDef classB : this.treeB.getClasses()) {
-			final ClassDef classA = classes.get(classB.getName(this.matchB));
+		for (final ClassDef classA : this.treeA.getClasses()) {
+			final ClassDef classB = classes.get(classA.getName(this.matchB));
 
-			final ClassMapping<?, ?> mapping = mappings.getOrCreateClassMapping(classA.getName(this.from))
-					.setDeobfuscatedName(classB.getName(this.to));
-
-			for (final FieldDef fieldB : classB.getFields()) {
-				final FieldDef fieldA = fields.get(fieldB.getName(this.matchB));
-
-				mapping.getOrCreateFieldMapping(fieldA.getName(this.from), fieldA.getDescriptor(this.from))
-						.setDeobfuscatedName(fieldB.getName(this.to));
+			final ClassMapping<?, ?> klass = mappings.getOrCreateClassMapping(classA.getName(this.from));
+			if (classB != null) {
+				klass.setDeobfuscatedName(classB.getName(this.to));
 			}
 
-			for (final MethodDef methodB : classB.getMethods()) {
-				final MethodDef methodA = methods.get(methodB.getName(this.matchB));
+			for (final FieldDef fieldA : classA.getFields()) {
+				final FieldDef fieldB = fields.get(fieldA.getName(this.matchB));
 
-				mapping.getOrCreateMethodMapping(methodA.getName(this.from), methodA.getDescriptor(this.from))
-						.setDeobfuscatedName(methodB.getName(this.to));
+				final FieldMapping field = klass.getOrCreateFieldMapping(fieldA.getName(this.from), fieldA.getDescriptor(this.from));
+				if (fieldB != null) {
+					field.setDeobfuscatedName(fieldB.getName(this.to));
+				}
+			}
+
+			for (final MethodDef methodA : classA.getMethods()) {
+				final MethodDef methodB = methods.get(methodA.getName(this.matchB));
+
+				final MethodMapping method = klass.getOrCreateMethodMapping(methodA.getName(this.from), methodA.getDescriptor(this.from));
+				if (methodB != null) {
+					method.setDeobfuscatedName(methodA.getName(this.to));
+				}
 			}
 		}
 

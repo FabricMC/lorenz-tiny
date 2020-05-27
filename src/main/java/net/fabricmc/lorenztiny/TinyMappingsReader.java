@@ -25,16 +25,12 @@
 package net.fabricmc.lorenztiny;
 
 import net.fabricmc.mapping.tree.ClassDef;
-import net.fabricmc.mapping.tree.Descriptored;
 import net.fabricmc.mapping.tree.FieldDef;
 import net.fabricmc.mapping.tree.MethodDef;
 import net.fabricmc.mapping.tree.TinyTree;
 import org.cadixdev.lorenz.MappingSet;
 import org.cadixdev.lorenz.io.MappingsReader;
 import org.cadixdev.lorenz.model.ClassMapping;
-import org.cadixdev.lorenz.model.MemberMapping;
-
-import java.util.function.BiFunction;
 
 /**
  * A {@link MappingsReader mappings reader} for Fabric's Tiny
@@ -74,40 +70,21 @@ public class TinyMappingsReader extends MappingsReader {
 	@Override
 	public MappingSet read(final MappingSet mappings) {
 		for (final ClassDef klass : this.tree.getClasses()) {
-			final String obf = klass.getName(this.from);
-			final String deobf = klass.getName(this.to);
-
-			final ClassMapping<?, ?> mapping = mappings.getOrCreateClassMapping(obf)
-					.setDeobfuscatedName(deobf);
+			final ClassMapping<?, ?> mapping = mappings.getOrCreateClassMapping(klass.getName(this.from))
+					.setDeobfuscatedName(klass.getName(this.to));
 
 			for (final FieldDef field : klass.getFields()) {
-				this.mapMember(field, mapping::getOrCreateFieldMapping);
+				mapping.getOrCreateFieldMapping(field.getName(this.from), field.getDescriptor(this.from))
+						.setDeobfuscatedName(field.getName(this.to));
 			}
 
 			for (final MethodDef method : klass.getMethods()) {
-				this.mapMember(method, mapping::getOrCreateMethodMapping);
+				mapping.getOrCreateMethodMapping(method.getName(this.from), method.getDescriptor(this.from))
+						.setDeobfuscatedName(method.getName(this.to));
 			}
 		}
 
 		return mappings;
-	}
-
-	/**
-	 * Creates a {@link MemberMapping member mapping} for the given
-	 * {@link Descriptored member}.
-	 *
-	 * @param member      The Tiny member
-	 * @param getOrCreate A bi-function that creates a member mapping
-	 *                    for a given obfuscated name and descriptor.
-	 */
-	protected void mapMember(final Descriptored member,
-	                         final BiFunction<String, String, MemberMapping<?, ?>> getOrCreate) {
-		final String obfName = member.getName(this.from);
-		final String obfDesc = member.getDescriptor(this.from);
-		final String deobfName = member.getName(this.to);
-
-		getOrCreate.apply(obfName, obfDesc)
-				.setDeobfuscatedName(deobfName);
 	}
 
 	@Override
