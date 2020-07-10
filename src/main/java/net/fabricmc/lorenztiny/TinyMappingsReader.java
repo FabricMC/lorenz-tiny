@@ -60,11 +60,15 @@ public class TinyMappingsReader extends MappingsReader {
 	 *             obfuscated names
 	 * @param to   The namespace to use in the tiny file, as Lorenz's
 	 *             de-obfuscated names
+	 * @throws IllegalArgumentException if the {@code from} or {@code to} namespace is not present in the tiny tree
 	 */
 	public TinyMappingsReader(final TinyTree tree, final String from, final String to) {
 		this.tree = tree;
 		this.from = from;
 		this.to = to;
+
+		this.validateNamespace(tree, from);
+		this.validateNamespace(tree, to);
 	}
 
 	@Override
@@ -89,6 +93,12 @@ public class TinyMappingsReader extends MappingsReader {
 
 	@Override
 	public void close() {
+	}
+
+	private void validateNamespace(TinyTree tree, String namespace) {
+		if (!tree.getMetadata().getNamespaces().contains(namespace)) {
+			throw new IllegalArgumentException(String.format("Could not find namespace \"%s\" in provided tiny tree", namespace));
+		}
 	}
 
 }
