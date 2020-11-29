@@ -27,10 +27,12 @@ package net.fabricmc.lorenztiny;
 import net.fabricmc.mapping.tree.ClassDef;
 import net.fabricmc.mapping.tree.FieldDef;
 import net.fabricmc.mapping.tree.MethodDef;
+import net.fabricmc.mapping.tree.ParameterDef;
 import net.fabricmc.mapping.tree.TinyTree;
 import org.cadixdev.lorenz.MappingSet;
 import org.cadixdev.lorenz.io.MappingsReader;
 import org.cadixdev.lorenz.model.ClassMapping;
+import org.cadixdev.lorenz.model.MethodMapping;
 
 /**
  * A {@link MappingsReader mappings reader} for Fabric's Tiny
@@ -83,8 +85,14 @@ public class TinyMappingsReader extends MappingsReader {
 			}
 
 			for (final MethodDef method : klass.getMethods()) {
-				mapping.getOrCreateMethodMapping(method.getName(this.from), method.getDescriptor(this.from))
+				final MethodMapping methodmapping = mapping
+						.getOrCreateMethodMapping(method.getName(this.from), method.getDescriptor(this.from))
 						.setDeobfuscatedName(method.getName(this.to));
+
+				for (final ParameterDef param : method.getParameters()) {
+					methodmapping.getOrCreateParameterMapping(param.getLocalVariableIndex())
+							.setDeobfuscatedName(param.getName(this.to));
+				}
 			}
 		}
 

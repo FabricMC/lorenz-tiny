@@ -24,12 +24,15 @@
 
 package net.fabricmc.lorenztiny;
 
+import java.io.BufferedWriter;
+import java.io.Writer;
 import net.fabricmc.mapping.reader.v2.MappingParseException;
 import net.fabricmc.mapping.tree.TinyMappingFactory;
 import net.fabricmc.mapping.tree.TinyTree;
 import org.cadixdev.lorenz.MappingSet;
 import org.cadixdev.lorenz.io.MappingFormat;
 import org.cadixdev.lorenz.io.MappingsReader;
+import org.cadixdev.lorenz.io.MappingsWriter;
 import org.cadixdev.lorenz.model.Mapping;
 
 import java.io.BufferedReader;
@@ -68,6 +71,11 @@ public enum TinyMappingFormat {
 		protected TinyTree load(final BufferedReader reader) throws IOException, MappingParseException {
 			return TinyMappingFactory.loadLegacy(reader);
 		}
+
+		@Override
+		public MappingsWriter createWriter(final Writer writer, final String from, final String to) {
+			return new TinyMappingsLegacyWriter(writer, from, to);
+		}
 	},
 
 	/**
@@ -84,6 +92,45 @@ public enum TinyMappingFormat {
 	;
 
 	protected abstract TinyTree load(final BufferedReader reader) throws IOException, MappingParseException;
+
+	/**
+	 * Creates a new {@link MappingsWriter mappings writer} for the
+	 * writer supplied.
+	 * <p>
+	 * The resulting mappings written will use the {@code from} namespace
+	 * (for the obfuscated names in Lorenz) to the {@code to} namespace (for
+	 * the de-obfuscated names in Lorenz).
+	 *
+	 * @param writer The {@link Writer} to write the mappings to
+	 * @param from The namespace to place the obfuscated names under
+	 * @param to The namespace to place the deobfuscated names under
+	 * @return The mappings writer
+	 * @since 3.0.0
+	 */
+	public MappingsWriter createWriter(final Writer writer, final String from, final String to) {
+		return new TinyMappingsWriter(writer, from, to);
+	}
+
+	/**
+	 * Write the given {@link MappingSet mapping set} to the file specified
+	 * by the supplied {@link Path path}.
+	 * <p>
+	 * The resulting mappings written will use the {@code from} namespace
+	 * (for the obfuscated names in Lorenz) to the {@code to} namespace (for
+	 * the de-obfuscated names in Lorenz).
+	 *
+	 * @param mappings The mappings to write
+	 * @param path The file to write the mappings to
+	 * @param from The namespace to place the obfuscated names under
+	 * @param to The namespace to place the deobfuscated names under
+	 * @throws IOException if an I/O error occurs writing the file
+	 * @since 3.0.0
+	 */
+	public void write(final MappingSet mappings, final Path path, final String from, final String to) throws IOException {
+		try (final BufferedWriter writer = Files.newBufferedWriter(path)) {
+			this.createWriter(writer, from, to).write(mappings);
+		}
+	}
 
 	/**
 	 * Creates a new {@link MappingsReader mappings reader} for the
