@@ -33,7 +33,7 @@ import org.cadixdev.lorenz.model.MethodMapping;
 import org.cadixdev.lorenz.model.MethodParameterMapping;
 
 /**
- * A {@link MappingsWriter mappings writer} for Fabric's v2
+ * A {@link org.cadixdev.lorenz.io.MappingsWriter mappings writer} for Fabric's v2
  * Tiny format.
  *
  * @author Kyle Wood
