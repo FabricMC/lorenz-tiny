@@ -26,9 +26,9 @@ package net.fabricmc.lorenztiny;
 
 import java.io.BufferedWriter;
 import java.io.Writer;
-import net.fabricmc.mapping.reader.v2.MappingParseException;
-import net.fabricmc.mapping.tree.TinyMappingFactory;
-import net.fabricmc.mapping.tree.TinyTree;
+import net.fabricmc.mappingio.MappingReader;
+import net.fabricmc.mappingio.tree.MappingTree;
+import net.fabricmc.mappingio.tree.MemoryMappingTree;
 import org.cadixdev.lorenz.MappingSet;
 import org.cadixdev.lorenz.io.MappingFormat;
 import org.cadixdev.lorenz.io.MappingsReader;
@@ -50,26 +50,26 @@ import java.nio.file.Path;
 public enum TinyMappingFormat {
 
 	/**
-	 * Reads tiny mappings with new standard ({@code "tiny"} header).
-	 *
-	 * @see TinyMappingFactory#load(BufferedReader)
+	 * Reads tiny mappings with new v2 ({@code "tiny"} header).
 	 */
-	STANDARD {
+	TINY_2 {
 		@Override
-		protected TinyTree load(final BufferedReader reader) throws IOException, MappingParseException {
-			return TinyMappingFactory.load(reader);
+		protected MappingTree load(final BufferedReader reader) throws IOException {
+			MemoryMappingTree mappingTree = new MemoryMappingTree();
+			MappingReader.read(reader, net.fabricmc.mappingio.format.MappingFormat.TINY_2, mappingTree);
+			return mappingTree;
 		}
 	},
 
 	/**
-	 * Reads tiny mappings with legacy format ({@code "v1"} header).
-	 *
-	 * @see TinyMappingFactory#loadLegacy(BufferedReader)
+	 * Reads tiny mappings with legacy v1 format ({@code "v1"} header).
 	 */
-	LEGACY {
+	TINY {
 		@Override
-		protected TinyTree load(final BufferedReader reader) throws IOException, MappingParseException {
-			return TinyMappingFactory.loadLegacy(reader);
+		protected MappingTree load(final BufferedReader reader) throws IOException {
+			MemoryMappingTree mappingTree = new MemoryMappingTree();
+			MappingReader.read(reader, net.fabricmc.mappingio.format.MappingFormat.TINY, mappingTree);
+			return mappingTree;
 		}
 
 		@Override
@@ -79,19 +79,19 @@ public enum TinyMappingFormat {
 	},
 
 	/**
-	 * Reads tiny mappings of either the standard (new) or legacy format.
-	 *
-	 * @see TinyMappingFactory#loadWithDetection(BufferedReader)
+	 * Reads mappings of of any supported format.
 	 */
 	DETECT {
 		@Override
-		protected TinyTree load(final BufferedReader reader) throws IOException, MappingParseException {
-			return TinyMappingFactory.loadWithDetection(reader);
+		protected MappingTree load(final BufferedReader reader) throws IOException {
+			MemoryMappingTree mappingTree = new MemoryMappingTree();
+			MappingReader.read(reader, mappingTree);
+			return mappingTree;
 		}
 	},
 	;
 
-	protected abstract TinyTree load(final BufferedReader reader) throws IOException, MappingParseException;
+	protected abstract MappingTree load(final BufferedReader reader) throws IOException;
 
 	/**
 	 * Creates a new {@link MappingsWriter mappings writer} for the
@@ -149,7 +149,7 @@ public enum TinyMappingFormat {
 	 * @throws IOException if an I/O error occurs opening the file
 	 */
 	public MappingsReader createReader(final Path path,
-	                                   final String from, final String to) throws IOException, MappingParseException {
+	                                   final String from, final String to) throws IOException {
 		try (final BufferedReader reader = Files.newBufferedReader(path)) {
 			return new TinyMappingsReader(this.load(reader), from, to);
 		}
@@ -172,7 +172,7 @@ public enum TinyMappingFormat {
 	 * @throws IOException if an I/O error occurs opening the file
 	 */
 	public MappingSet read(final MappingSet mappings, final Path path,
-	                       final String from, final String to) throws IOException, MappingParseException {
+	                       final String from, final String to) throws IOException {
 		try (final MappingsReader reader = this.createReader(path, from, to)) {
 			reader.read(mappings);
 		}
@@ -195,7 +195,7 @@ public enum TinyMappingFormat {
 	 * @throws IOException if an I/O error occurs opening the file
 	 */
 	public MappingSet read(final Path path,
-	                       final String from, final String to) throws IOException, MappingParseException {
+	                       final String from, final String to) throws IOException {
 		return this.read(MappingSet.create(), path, from, to);
 	}
 

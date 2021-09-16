@@ -24,11 +24,7 @@
 
 package net.fabricmc.lorenztiny;
 
-import net.fabricmc.mapping.tree.ClassDef;
-import net.fabricmc.mapping.tree.FieldDef;
-import net.fabricmc.mapping.tree.MethodDef;
-import net.fabricmc.mapping.tree.ParameterDef;
-import net.fabricmc.mapping.tree.TinyTree;
+import net.fabricmc.mappingio.tree.MappingTree;
 import org.cadixdev.lorenz.MappingSet;
 import org.cadixdev.lorenz.io.MappingsReader;
 import org.cadixdev.lorenz.model.ClassMapping;
@@ -45,13 +41,13 @@ import org.cadixdev.lorenz.model.MethodMapping;
  */
 public class TinyMappingsReader extends MappingsReader {
 
-	private final TinyTree tree;
+	private final MappingTree tree;
 	private final String from;
 	private final String to;
 
 	/**
 	 * Creates a new mappings reader for Fabric's Tiny format, from a
-	 * {@link TinyTree tiny tree}.
+	 * {@link MappingTree tiny tree}.
 	 * <p>
 	 * The resulting {@link MappingSet mapping set} will have mappings
 	 * using the from namespace (as the obfuscated names in Lorenz) to
@@ -64,7 +60,7 @@ public class TinyMappingsReader extends MappingsReader {
 	 *             de-obfuscated names
 	 * @throws IllegalArgumentException if the {@code from} or {@code to} namespace is not present in the tiny tree
 	 */
-	public TinyMappingsReader(final TinyTree tree, final String from, final String to) {
+	public TinyMappingsReader(final MappingTree tree, final String from, final String to) {
 		this.tree = tree;
 		this.from = from;
 		this.to = to;
@@ -75,22 +71,22 @@ public class TinyMappingsReader extends MappingsReader {
 
 	@Override
 	public MappingSet read(final MappingSet mappings) {
-		for (final ClassDef klass : this.tree.getClasses()) {
+		for (final MappingTree.ClassMapping klass : this.tree.getClasses()) {
 			final ClassMapping<?, ?> mapping = mappings.getOrCreateClassMapping(klass.getName(this.from))
 					.setDeobfuscatedName(klass.getName(this.to));
 
-			for (final FieldDef field : klass.getFields()) {
-				mapping.getOrCreateFieldMapping(field.getName(this.from), field.getDescriptor(this.from))
+			for (final MappingTree.FieldMapping field : klass.getFields()) {
+				mapping.getOrCreateFieldMapping(field.getName(this.from), field.getDesc(this.from))
 						.setDeobfuscatedName(field.getName(this.to));
 			}
 
-			for (final MethodDef method : klass.getMethods()) {
+			for (final MappingTree.MethodMapping method : klass.getMethods()) {
 				final MethodMapping methodmapping = mapping
-						.getOrCreateMethodMapping(method.getName(this.from), method.getDescriptor(this.from))
+						.getOrCreateMethodMapping(method.getName(this.from), method.getDesc(this.from))
 						.setDeobfuscatedName(method.getName(this.to));
 
-				for (final ParameterDef param : method.getParameters()) {
-					methodmapping.getOrCreateParameterMapping(param.getLocalVariableIndex())
+				for (final MappingTree.MethodArgMapping param : method.getArgs()) {
+					methodmapping.getOrCreateParameterMapping(param.getLvIndex())
 							.setDeobfuscatedName(param.getName(this.to));
 				}
 			}
@@ -103,8 +99,8 @@ public class TinyMappingsReader extends MappingsReader {
 	public void close() {
 	}
 
-	private void validateNamespace(TinyTree tree, String namespace) {
-		if (!tree.getMetadata().getNamespaces().contains(namespace)) {
+	private void validateNamespace(MappingTree tree, String namespace) {
+		if (!tree.getDstNamespaces().contains(namespace) && !tree.getSrcNamespace().equals(namespace)) {
 			throw new IllegalArgumentException(String.format("Could not find namespace \"%s\" in provided tiny tree", namespace));
 		}
 	}
