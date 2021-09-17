@@ -86,7 +86,7 @@ public class TinyMappingsReader extends MappingsReader {
 						.setDeobfuscatedName(method.getName(this.to));
 
 				for (final MappingTree.MethodArgMapping param : method.getArgs()) {
-					methodmapping.getOrCreateParameterMapping(param.getLvIndex())
+					methodmapping.getOrCreateParameterMapping(param.getArgPosition())
 							.setDeobfuscatedName(param.getName(this.to));
 				}
 			}
