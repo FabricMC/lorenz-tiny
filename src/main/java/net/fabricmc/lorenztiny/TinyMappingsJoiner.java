@@ -90,15 +90,23 @@ public class TinyMappingsJoiner extends MappingsReader {
 
 			final ClassMapping<?, ?> klass = mappings.getOrCreateClassMapping(classA.getName(this.from));
 			if (classB != null) {
-				klass.setDeobfuscatedName(classB.getName(this.to));
+				String deobfName = classB.getName(this.to);
+
+				if (deobfName != null) {
+					klass.setDeobfuscatedName(deobfName);
+				}
 			}
 
 			for (final MappingTree.FieldMapping fieldA : classA.getFields()) {
 				final MappingTree.FieldMapping fieldB = fields.get(fieldA.getName(this.matchB));
 
 				if (fieldB != null) {
-					klass.getOrCreateFieldMapping(fieldA.getName(this.from), fieldA.getDesc(this.from))
-							.setDeobfuscatedName(fieldB.getName(this.to));
+					String deobfName = fieldB.getName(this.to);
+
+					if (deobfName != null) {
+						klass.getOrCreateFieldMapping(fieldA.getName(this.from), fieldA.getDesc(this.from))
+								.setDeobfuscatedName(deobfName);
+					}
 				}
 			}
 
@@ -106,8 +114,12 @@ public class TinyMappingsJoiner extends MappingsReader {
 				final MappingTree.MethodMapping methodB = methods.get(methodA.getName(this.matchB));
 
 				if (methodB != null) {
-					klass.getOrCreateMethodMapping(methodA.getName(this.from), methodA.getDesc(this.from))
-							.setDeobfuscatedName(methodB.getName(this.to));
+					String deobfName = methodB.getName(this.to);
+
+					if (deobfName != null) {
+						klass.getOrCreateMethodMapping(methodA.getName(this.from), methodA.getDesc(this.from))
+								.setDeobfuscatedName(deobfName);
+					}
 				}
 			}
 		}

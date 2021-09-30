@@ -6,7 +6,7 @@ plugins {
 
 group 'net.fabricmc'
 archivesBaseName = 'lorenz-tiny'
-version '4.0.1'
+version '4.0.2'
 
 def ENV = System.getenv()
 version = version + (ENV.GITHUB_ACTIONS ? "" : "+local")
