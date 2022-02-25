@@ -72,22 +72,32 @@ public class TinyMappingsReader extends MappingsReader {
 	@Override
 	public MappingSet read(final MappingSet mappings) {
 		for (final MappingTree.ClassMapping klass : this.tree.getClasses()) {
+			final String className = klass.getName(this.to);
+			if (className.isEmpty()) {
+				continue;
+			}
 			final ClassMapping<?, ?> mapping = mappings.getOrCreateClassMapping(klass.getName(this.from))
-					.setDeobfuscatedName(klass.getName(this.to));
+					.setDeobfuscatedName(className);
 
 			for (final MappingTree.FieldMapping field : klass.getFields()) {
-				mapping.getOrCreateFieldMapping(field.getName(this.from), field.getDesc(this.from))
-						.setDeobfuscatedName(field.getName(this.to));
+				final String fieldName = field.getName(this.to);
+				if (!fieldName.isEmpty()) {
+					mapping.getOrCreateFieldMapping(field.getName(this.from), field.getDesc(this.from))
+							.setDeobfuscatedName(fieldName);
+				}
 			}
 
 			for (final MappingTree.MethodMapping method : klass.getMethods()) {
-				final MethodMapping methodmapping = mapping
-						.getOrCreateMethodMapping(method.getName(this.from), method.getDesc(this.from))
-						.setDeobfuscatedName(method.getName(this.to));
+				final String methodName = method.getName(this.to);
+				if (!methodName.isEmpty()) {
+					final MethodMapping methodmapping = mapping
+							.getOrCreateMethodMapping(method.getName(this.from), method.getDesc(this.from))
+							.setDeobfuscatedName(methodName);
 
-				for (final MappingTree.MethodArgMapping param : method.getArgs()) {
-					methodmapping.getOrCreateParameterMapping(param.getArgPosition())
-							.setDeobfuscatedName(param.getName(this.to));
+					for (final MappingTree.MethodArgMapping param : method.getArgs()) {
+						methodmapping.getOrCreateParameterMapping(param.getArgPosition())
+								.setDeobfuscatedName(param.getName(this.to));
+					}
 				}
 			}
 		}
