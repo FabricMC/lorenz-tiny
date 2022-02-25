@@ -73,7 +73,7 @@ public class TinyMappingsReader extends MappingsReader {
 	public MappingSet read(final MappingSet mappings) {
 		for (final MappingTree.ClassMapping klass : this.tree.getClasses()) {
 			final String className = klass.getName(this.to);
-			if (className != null) {
+			if (className == null) {
 				continue;
 			}
 			final ClassMapping<?, ?> mapping = mappings.getOrCreateClassMapping(klass.getName(this.from))
