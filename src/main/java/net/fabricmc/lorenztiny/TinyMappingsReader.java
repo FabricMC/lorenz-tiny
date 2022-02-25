@@ -73,7 +73,7 @@ public class TinyMappingsReader extends MappingsReader {
 	public MappingSet read(final MappingSet mappings) {
 		for (final MappingTree.ClassMapping klass : this.tree.getClasses()) {
 			final String className = klass.getName(this.to);
-			if (className.isEmpty()) {
+			if (className != null) {
 				continue;
 			}
 			final ClassMapping<?, ?> mapping = mappings.getOrCreateClassMapping(klass.getName(this.from))
@@ -81,7 +81,7 @@ public class TinyMappingsReader extends MappingsReader {
 
 			for (final MappingTree.FieldMapping field : klass.getFields()) {
 				final String fieldName = field.getName(this.to);
-				if (!fieldName.isEmpty()) {
+				if (fieldName != null) {
 					mapping.getOrCreateFieldMapping(field.getName(this.from), field.getDesc(this.from))
 							.setDeobfuscatedName(fieldName);
 				}
@@ -89,7 +89,7 @@ public class TinyMappingsReader extends MappingsReader {
 
 			for (final MappingTree.MethodMapping method : klass.getMethods()) {
 				final String methodName = method.getName(this.to);
-				if (!methodName.isEmpty()) {
+				if (methodName != null) {
 					final MethodMapping methodmapping = mapping
 							.getOrCreateMethodMapping(method.getName(this.from), method.getDesc(this.from))
 							.setDeobfuscatedName(methodName);
