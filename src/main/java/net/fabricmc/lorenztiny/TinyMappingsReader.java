@@ -72,27 +72,30 @@ public class TinyMappingsReader extends MappingsReader {
 	@Override
 	public MappingSet read(final MappingSet mappings) {
 		for (final MappingTree.ClassMapping klass : this.tree.getClasses()) {
-			final String className = klass.getName(this.to);
-			if (className == null) {
+			final String classNameTo = klass.getName(this.to);
+			final String classNameFrom = klass.getName(this.from);
+			if (classNameTo == null || classNameFrom == null) {
 				continue;
 			}
-			final ClassMapping<?, ?> mapping = mappings.getOrCreateClassMapping(klass.getName(this.from))
-					.setDeobfuscatedName(className);
+			final ClassMapping<?, ?> mapping = mappings.getOrCreateClassMapping(classNameFrom)
+					.setDeobfuscatedName(classNameTo);
 
 			for (final MappingTree.FieldMapping field : klass.getFields()) {
-				final String fieldName = field.getName(this.to);
-				if (fieldName != null) {
-					mapping.getOrCreateFieldMapping(field.getName(this.from), field.getDesc(this.from))
-							.setDeobfuscatedName(fieldName);
+				final String fieldNameTo = field.getName(this.to);
+				final String fieldNameFrom = field.getName(this.from);
+				if (fieldNameTo != null) {
+					mapping.getOrCreateFieldMapping(fieldNameFrom, field.getDesc(this.from))
+							.setDeobfuscatedName(fieldNameTo);
 				}
 			}
 
 			for (final MappingTree.MethodMapping method : klass.getMethods()) {
-				final String methodName = method.getName(this.to);
-				if (methodName != null) {
+				final String methodNameTo = method.getName(this.to);
+				final String methodNameFrom = method.getName(this.from);
+				if (methodNameTo != null) {
 					final MethodMapping methodmapping = mapping
-							.getOrCreateMethodMapping(method.getName(this.from), method.getDesc(this.from))
-							.setDeobfuscatedName(methodName);
+							.getOrCreateMethodMapping(methodNameFrom, method.getDesc(this.from))
+							.setDeobfuscatedName(methodNameTo);
 
 					for (final MappingTree.MethodArgMapping param : method.getArgs()) {
 						methodmapping.getOrCreateParameterMapping(param.getArgPosition())
