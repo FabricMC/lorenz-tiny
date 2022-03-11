@@ -1,7 +1,7 @@
 /*
  * This file is part of lorenz-tiny, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2020 FabricMC
+ * Copyright (c) 2020, 2022 FabricMC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,22 +72,35 @@ public class TinyMappingsReader extends MappingsReader {
 	@Override
 	public MappingSet read(final MappingSet mappings) {
 		for (final MappingTree.ClassMapping klass : this.tree.getClasses()) {
-			final ClassMapping<?, ?> mapping = mappings.getOrCreateClassMapping(klass.getName(this.from))
-					.setDeobfuscatedName(klass.getName(this.to));
+			final String classNameTo = klass.getName(this.to);
+			final String classNameFrom = klass.getName(this.from);
+			if (classNameTo == null || classNameFrom == null) {
+				continue;
+			}
+			final ClassMapping<?, ?> mapping = mappings.getOrCreateClassMapping(classNameFrom)
+					.setDeobfuscatedName(classNameTo);
 
 			for (final MappingTree.FieldMapping field : klass.getFields()) {
-				mapping.getOrCreateFieldMapping(field.getName(this.from), field.getDesc(this.from))
-						.setDeobfuscatedName(field.getName(this.to));
+				final String fieldNameTo = field.getName(this.to);
+				final String fieldNameFrom = field.getName(this.from);
+				if (fieldNameTo != null) {
+					mapping.getOrCreateFieldMapping(fieldNameFrom, field.getDesc(this.from))
+							.setDeobfuscatedName(fieldNameTo);
+				}
 			}
 
 			for (final MappingTree.MethodMapping method : klass.getMethods()) {
-				final MethodMapping methodmapping = mapping
-						.getOrCreateMethodMapping(method.getName(this.from), method.getDesc(this.from))
-						.setDeobfuscatedName(method.getName(this.to));
+				final String methodNameTo = method.getName(this.to);
+				final String methodNameFrom = method.getName(this.from);
+				if (methodNameTo != null) {
+					final MethodMapping methodmapping = mapping
+							.getOrCreateMethodMapping(methodNameFrom, method.getDesc(this.from))
+							.setDeobfuscatedName(methodNameTo);
 
-				for (final MappingTree.MethodArgMapping param : method.getArgs()) {
-					methodmapping.getOrCreateParameterMapping(param.getArgPosition())
-							.setDeobfuscatedName(param.getName(this.to));
+					for (final MappingTree.MethodArgMapping param : method.getArgs()) {
+						methodmapping.getOrCreateParameterMapping(param.getArgPosition())
+								.setDeobfuscatedName(param.getName(this.to));
+					}
 				}
 			}
 		}
