@@ -72,18 +72,34 @@ public class TinyMappingsReader extends MappingsReader {
 	@Override
 	public MappingSet read(final MappingSet mappings) {
 		for (final MappingTree.ClassMapping klass : this.tree.getClasses()) {
-			final ClassMapping<?, ?> mapping = mappings.getOrCreateClassMapping(klass.getName(this.from))
-					.setDeobfuscatedName(klass.getName(this.to));
+			final String classNameTo = klass.getName(this.to);
+			final String classNameFrom = klass.getName(this.from);
+
+			if (classNameTo == null || classNameFrom == null) continue;
+
+			final ClassMapping<?, ?> mapping = mappings
+					.getOrCreateClassMapping(classNameFrom)
+					.setDeobfuscatedName(classNameTo);
 
 			for (final MappingTree.FieldMapping field : klass.getFields()) {
-				mapping.getOrCreateFieldMapping(field.getName(this.from), field.getDesc(this.from))
-						.setDeobfuscatedName(field.getName(this.to));
+				final String fieldNameTo = field.getName(this.to);
+				final String fieldNameFrom = field.getName(this.from);
+
+				if (fieldNameTo == null || fieldNameFrom == null) continue;
+
+				mapping.getOrCreateFieldMapping(fieldNameFrom, field.getDesc(this.from))
+						.setDeobfuscatedName(fieldNameTo);
 			}
 
 			for (final MappingTree.MethodMapping method : klass.getMethods()) {
+				final String methodNameTo = method.getName(this.to);
+				final String methodNameFrom = method.getName(this.from);
+
+				if (methodNameTo == null || methodNameFrom == null) continue;
+
 				final MethodMapping methodmapping = mapping
-						.getOrCreateMethodMapping(method.getName(this.from), method.getDesc(this.from))
-						.setDeobfuscatedName(method.getName(this.to));
+						.getOrCreateMethodMapping(methodNameFrom, method.getDesc(this.from))
+						.setDeobfuscatedName(methodNameTo);
 
 				for (final MappingTree.MethodArgMapping param : method.getArgs()) {
 					methodmapping.getOrCreateParameterMapping(param.getArgPosition())
